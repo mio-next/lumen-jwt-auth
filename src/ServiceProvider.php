@@ -6,10 +6,22 @@
 
 namespace Canis\Lumen\Jwt;
 
-use Illuminate\Support\ServiceProvider;
+use Auth;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-class LumenServiceProvider extends ServiceProvider
+class ServiceProvider extends BaseServiceProvider
 {
+    private $jwt;
+
+    public function boot()
+    {
+        $this->app->configure('jwt');
+        Auth::extend('jwt', function($app, $name, array $config) {
+            $guard = new JwtGuard($config['provider'], $app['request']);
+            $app->refresh('request', $guard, 'setRequest');
+            return $guard;
+        });
+    }
     /**
      * Register the service provider.
      *
