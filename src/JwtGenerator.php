@@ -50,6 +50,9 @@ class JwtGenerator
         if (!empty($this->config['issuer'])) {
             $default['iss'] = $this->config['issuer'];
         }
+        if (!empty($this->config['audience'])) {
+            $default['aud'] = $this->config['audience'];
+        }
         return $default;
     }
 

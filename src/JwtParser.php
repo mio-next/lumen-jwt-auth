@@ -29,6 +29,16 @@ class JwtParser
         if (!$this->checkRequiredClaims(array_keys($token->getClaims()))) {
             return false;
         };
+        $data = new ValidationData();
+        if (isset($this->config['issuer'])) {
+            $data->setIssuer($this->config['issuer']);
+        }
+        if (isset($this->config['audience'])) {
+            $data->setIssuer($this->config['audience']);
+        }
+        if (!$token->validate($data)) {
+            return false;
+        }
         return $token;
     }
 }
