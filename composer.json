@@ -1,0 +1,28 @@
+{
+    "name": "canis/lumen-jwt-auth",
+    "description": "Light wrapper around lcobucci/jwt for Lumen",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jacob Morrison",
+            "email": "jacob@canis.io"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.6",
+        "laravel/lumen-framework": "5.2.*",
+        "lcobucci/jwt": "^3.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "symfony/var-dumper": "~3.0",
+        "mockery/mockery": "^0.9.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Canis\\Lumen\\Jwt\\": "src/"
+        }
+    }
+}
