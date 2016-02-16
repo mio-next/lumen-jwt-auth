@@ -5,7 +5,7 @@
  */
 namespace Canis\Lumen\Jwt;
 
-use Exceptions\InvalidTokenException;
+use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;

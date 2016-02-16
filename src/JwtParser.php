@@ -5,7 +5,7 @@
  */
 namespace Canis\Lumen\Jwt;
 
-use Exceptions\InvalidTokenException;
+use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
@@ -34,7 +34,7 @@ class JwtParser
             $data->setIssuer($this->config['issuer']);
         }
         if (isset($this->config['audience'])) {
-            $data->setIssuer($this->config['audience']);
+            $data->setAudience($this->config['audience']);
         }
         if (!$token->validate($data)) {
             return false;
