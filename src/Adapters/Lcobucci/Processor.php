@@ -7,9 +7,7 @@ namespace Canis\Lumen\Jwt\Adapters\Lcobucci;
 
 use Canis\Lumen\Jwt\Token;
 use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
-use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
-use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
 
@@ -42,6 +40,6 @@ class Processor
         if (!$token->validate($data)) {
             return false;
         }
-        return new Token((string)$token, $token->getClaims());
+        return new Token((string) $token, $token->getClaims());
     }
 }

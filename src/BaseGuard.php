@@ -5,17 +5,14 @@
  */
 namespace Canis\Lumen\Jwt;
 
-use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Guard as GaurdContract;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Canis\Lumen\Jwt\Exceptions\InvalidAdapterException;
 use Canis\Lumen\Jwt\Contracts\AdapterFactory as AdapterFactoryContract;
-use Canis\Lumen\Jwt\Contracts\Generator as GeneratorContract;
 use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
 
 abstract class BaseGuard
@@ -54,7 +51,7 @@ abstract class BaseGuard
         if (class_exists($config['adapter'])) {
             $factoryClass = $config['adapter'];
         } else {
-            $factoryClass = 'Canis\Lumen\Jwt\Adapters\\' . ucfirst($config['adapter']) .'\Factory';
+            $factoryClass = 'Canis\Lumen\Jwt\Adapters\\' . ucfirst($config['adapter']) . '\Factory';
             if (!class_exists($factoryClass)) {
                 throw new InvalidAdapterException("{$config['adapter']} is not available");
             }
@@ -91,7 +88,7 @@ abstract class BaseGuard
     /**
      * Returns a token generator from the adapter factory
      * 
-     * @return GeneratorCotnract
+     * @return GeneratorContract
      */
     protected function getGenerator()
     {
@@ -158,7 +155,7 @@ abstract class BaseGuard
     /**
      * Determine if the user matches the credentials.
      *
-     * @param  mixed  $user
+     * @param  Authenticatable|null  $user
      * @param  array  $credentials
      * @return bool
      */
