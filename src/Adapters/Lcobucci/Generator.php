@@ -9,7 +9,7 @@ use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
-use Lcobucci\JWT\Token;
+use Canis\Lumen\Jwt\Token;
 use Canis\Lumen\Jwt\Contracts\Generator as GeneratorContract;
 
 class Generator
@@ -19,7 +19,7 @@ class Generator
     /**
      * Generates the token
      * @param  array $claims
-     * @return Token
+     * @return string
      */
     final public function __invoke(array $claims)
     {
@@ -37,7 +37,8 @@ class Generator
         }
         $builder->setId(substr(hash('sha256', serialize($claims) . openssl_random_pseudo_bytes(20)), 0, 16), true);
         $builder->sign($signer, $this->config['secret']);
-        return $builder->getToken();
+        $token = $builder->getToken();
+        return new Token((string)$token, $token->getClaims());
     }
 
     /**

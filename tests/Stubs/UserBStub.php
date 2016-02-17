@@ -7,18 +7,9 @@ namespace CanisUnit\Lumen\Jwt\Stubs;
 
 use Canis\Lumen\Jwt\SubjectInterface as JwtSubjectInterface;
 use Illuminate\Http\Request;
-use Illuminate\Auth\Authenticatable;
-use Laravel\Lumen\Auth\Authorizable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 
-class UserStub implements
-    AuthenticatableContract,
-    AuthorizableContract,
-    JwtSubjectInterface
+class UserBStub implements JwtSubjectInterface
 {
-    use Authenticatable, Authorizable;
-    
     public function getJWTClaims()
     {
         return [
@@ -28,7 +19,7 @@ class UserStub implements
 
     public function getJWTSubject()
     {
-        return 'user-test-1';
+        return 'user-test-2';
     }
 
     public function getJWTSubjectType()

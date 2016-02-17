@@ -6,6 +6,7 @@
 namespace CanisUnit\Lumen\Jwt;
 
 use Auth;
+use Illuminate\Http\Request;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
 use Canis\Lumen\Jwt\ServiceProvider as JwtServiceProvider;
 
@@ -17,6 +18,26 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
         $app->withFacades();
         $app->register(JwtServiceProvider::class);
         return $app;
+    }
+
+    public function getValidTokenRequest($token = null)
+    {
+        if ($token === null) {
+            $token = $this->getValidToken();
+        }
+        $server = ['HTTP_AUTHORIZATION' => 'Bearer ' . (string) $token];
+        return Request::create('/foo', 'GET', [], [], [], $server);
+    }
+
+    public function getBasicRequest()
+    {
+        $server = ['HTTP_AUTHORIZATION' => 'Basic ' . base64_encode('username:password')];
+        return Request::create('/foo', 'GET', [], [], [], $server);
+    }
+
+    public function getRequest()
+    {
+        return Request::create('/foo', 'GET');
     }
 
     public function getGuard()
@@ -62,5 +83,14 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
         return $result;
     }
 
-    
+    protected function privateProperty($object, $property)
+    {
+        $classReflection = new \ReflectionClass(get_class($object));
+        $propertyReflection = $classReflection->getProperty($property);
+        $propertyReflection->setAccessible(true);
+        $result = $propertyReflection->getValue($object);
+        $propertyReflection->setAccessible(false);
+        return $result;
+    }
+
 }

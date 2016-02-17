@@ -17,7 +17,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->configure('jwt');
         Auth::extend('jwt', function($app, $name, array $config) {
-            $guard = new Guard($config['provider'], $app['request']);
+            $guard = new Guard(Auth::createUserProvider($config['provider']), $app['request']);
             $app->refresh('request', $guard, 'setRequest');
             return $guard;
         });

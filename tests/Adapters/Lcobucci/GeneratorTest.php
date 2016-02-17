@@ -7,6 +7,7 @@ namespace CanisUnit\Lumen\Jwt\Adapters\Lcobucci;
 
 use CanisUnit\Lumen\Jwt\BaseTestCase;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
+use Canis\Lumen\Jwt\Token;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 
 class GeneratorTest extends BaseTestCase
@@ -24,14 +25,14 @@ class GeneratorTest extends BaseTestCase
     {
         $generator = new Generator($this->getJwtConfig());
         $token = $generator(['sub' => 'test']);
-        $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
+        $this->assertTrue($token instanceof Token);
     }
 
     public function testBadClaim()
     {
         $generator = new Generator($this->getJwtConfig());
         $token = $generator(['jti' => 'test', 'sub' => 'test']);
-        $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
+        $this->assertTrue($token instanceof Token);
     }
 
     public function testAudience()
@@ -39,7 +40,7 @@ class GeneratorTest extends BaseTestCase
         $audience = 'AAA';
         $generator = new Generator($this->getJwtConfig(['audience' => $audience]));
         $token = $generator(['sub' => 'test']);
-        $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
+        $this->assertTrue($token instanceof Token);
         $this->assertEquals($audience, $token->getClaim('aud'));
     }
 
@@ -49,7 +50,7 @@ class GeneratorTest extends BaseTestCase
         $issuer = 'AAA.com';
         $generator = new Generator($this->getJwtConfig(['issuer' => $issuer]));
         $token = $generator(['sub' => 'test']);
-        $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
+        $this->assertTrue($token instanceof Token);
         $this->assertEquals($issuer, $token->getClaim('iss'));
     }
 

@@ -8,6 +8,7 @@ namespace CanisUnit\Lumen\Jwt\Adapters\Lcobucci;
 use CanisUnit\Lumen\Jwt\BaseTestCase;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Processor;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
+use Canis\Lumen\Jwt\Token;
 
 class ProcessorTest extends BaseTestCase
 {

@@ -1,7 +1,7 @@
 <?php
 return [
-    'issuer' => 'test.com',
-    'secret' => 'secret',
+    'issuer' => 'http://test.com',
+    'secret' => 'super-secret-test',
     'expOffset' => 3600,
     'requiredClaims' => ['iss', 'iat', 'exp', 'nbf', 'sub', 'jti']
 ];

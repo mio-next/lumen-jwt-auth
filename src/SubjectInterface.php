@@ -9,5 +9,7 @@ interface SubjectInterface
 {
     public function getJWTSubject();
 
+    public function getJWTSubjectType();
+
     public function getJWTClaims();
 }

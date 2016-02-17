@@ -5,7 +5,14 @@
  */
 namespace Canis\Lumen\Jwt\Contracts;
 
+use Canis\Lumen\Jwt\Token;
+
 interface Processor
 {
+    /**
+     * Processes a string token
+     * @param  string  $tokenString
+     * @return Token
+     */
     public function __invoke($tokenString);
 }

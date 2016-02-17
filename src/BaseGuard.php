@@ -10,26 +10,41 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\Guard as GaurdContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Canis\Lumen\Jwt\Exceptions\InvalidAdapterException;
+use Canis\Lumen\Jwt\Contracts\AdapterFactory as AdapterFactoryContract;
+use Canis\Lumen\Jwt\Contracts\Generator as GeneratorContract;
+use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
 
 abstract class BaseGuard
-    implements Guard, GuardInterface
+    implements GaurdContract, GuardInterface
 {
     use GuardHelpers;
 
-    private $request;
-    private $providerIdentifier;
+    /**
+     * @var Request
+     */
+    protected $request;
 
-    public function __construct($provider, Request $request)
+    /**
+     * Constructor
+     * 
+     * @param UserProvider $provider
+     * @param Request      $request
+     */
+    public function __construct(UserProvider $provider, Request $request)
     {
         $this->request = $request;
-        $this->providerIdentifier = $provider;
-        $this->provider = Auth::createUserProvider($provider);
+        $this->provider = $provider;
     }
 
+    /**
+     * Returns the adapter class name to use
+     * 
+     * @return string
+     */
     public function getAdapterFactoryClass()
     {
         $config = config('jwt');
@@ -47,6 +62,11 @@ abstract class BaseGuard
         return $factoryClass;
     }
 
+    /**
+     * Returns the adapter factory object
+     * 
+     * @return AdapterFactoryContract
+     */
     protected function getAdapterFactory()
     {
         static $factory;
@@ -58,16 +78,31 @@ abstract class BaseGuard
         return $factory;
     }
 
+    /**
+     * Returns a token processor from the adapter factory
+     * 
+     * @return ProcessorContract
+     */
     protected function getProcessor()
     {
         return $this->getAdapterFactory()->getProcessor();
     }
 
+    /**
+     * Returns a token generator from the adapter factory
+     * 
+     * @return GeneratorCotnract
+     */
     protected function getGenerator()
     {
         return $this->getAdapterFactory()->getGenerator();
     }
 
+    /**
+     * Gets the provider
+     * 
+     * @return UserProvider
+     */
     public function getProvider()
     {
         return $this->provider;
@@ -89,6 +124,11 @@ abstract class BaseGuard
         return $this->user = $user;
     }
 
+    /**
+     * Get's the bearer token from the request header
+     * 
+     * @return Token
+     */
     public function getBearerToken()
     {
         $authHeader = $this->request->headers->get('Authorization');
@@ -115,16 +155,43 @@ abstract class BaseGuard
         return false;
     }
 
+    /**
+     * Determine if the user matches the credentials.
+     *
+     * @param  mixed  $user
+     * @param  array  $credentials
+     * @return bool
+     */
+    protected function hasValidCredentials($user, $credentials)
+    {
+        return !is_null($user) && $this->getProvider()->validateCredentials($user, $credentials);
+    }
+
+    /**
+     * Sets the Request
+     * 
+     * @param Request $request
+     */
     public function setRequest(Request $request)
     {
         $this->request = $request;
     }
 
     /**
+     * Gets the request
+     * 
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
      * Attempt to authenticate a user using the given credentials.
      *
      * @param  array  $credentials
-     * @return bool
+     * @return bool|string
      */
     public function attempt(array $credentials = [])
     {
@@ -133,7 +200,7 @@ abstract class BaseGuard
             $tokenGenerator = $this->getGenerator();
             $claims = $user->getJWTClaims();
             $claims['sub'] = $user->getJWTSubject();
-            $claims['type'] = $this->providerIdentifier;
+            $claims['type'] = $user->getJWTSubjectType();
             if (!($token = $tokenGenerator($claims))) {
                 throw new InvalidTokenException("Unable to generate token");
             }
