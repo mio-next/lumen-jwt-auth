@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2016 Canis.io
  * @license   MIT
  */
-namespace Canis\Lumen\Jwt;
+namespace Canis\Lumen\Jwt\Adapters\Lcobucci;
 
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
@@ -12,7 +12,7 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token;
 
-abstract class JwtHelperBase
+abstract class HelperBase
 {
     /**
      * @var array
@@ -23,10 +23,9 @@ abstract class JwtHelperBase
      * Constructor
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         $this->config = array_merge($this->getDefaultConfig(), $config);
-
         if (empty($this->config['secret'])) {
             throw new InvalidTokenException("JWT token generator requires a secret");
         }

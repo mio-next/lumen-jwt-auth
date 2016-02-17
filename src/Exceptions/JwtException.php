@@ -5,7 +5,7 @@
  */
 namespace Canis\Lumen\Jwt\Exceptions;
 
-class InvalidTokenException
-    extends JwtException
+class JwtException
+    extends \Exception
 {
 }

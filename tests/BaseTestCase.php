@@ -5,11 +5,26 @@
  */
 namespace CanisUnit\Lumen\Jwt;
 
-use Canis\Lumen\Jwt\JwtGenerator;
+use Auth;
+use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
+use Canis\Lumen\Jwt\ServiceProvider as JwtServiceProvider;
 
-abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
+abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
 {
-    protected function getConfig($config = [])
+    public function createApplication()
+    {
+        $app = new \Laravel\Lumen\Application(__DIR__);
+        $app->withFacades();
+        $app->register(JwtServiceProvider::class);
+        return $app;
+    }
+
+    public function getGuard()
+    {
+        return Auth::guard('jwt');
+    }
+
+    protected function getJwtConfig($config = [])
     {
         return array_merge([
             'issuer' => 'http://test.com',
@@ -21,19 +36,31 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 
     protected function getValidToken($config = [])
     {
-        $generator = new JwtGenerator($this->getConfig($config));
+        $generator = new Generator($this->getJwtConfig($config));
         return $generator(['sub' => 'test']);
     }
 
     protected function getExpiredToken()
     {
-        $generator = new JwtGenerator($this->getConfig(['expOffset' => -1]));
+        $generator = new Generator($this->getJwtConfig(['expOffset' => -1]));
         return $generator(['sub' => 'test']);
     }
 
     protected function getNotReadyToken()
     {
-        $generator = new JwtGenerator($this->getConfig(['nbfOffset' => 3600]));
+        $generator = new Generator($this->getJwtConfig(['nbfOffset' => 3600]));
         return $generator(['sub' => 'test']);
     }
+
+    protected function invoke($object, $method, array $args = [])
+    {
+        $classReflection = new \ReflectionClass(get_class($object));
+        $methodReflection = $classReflection->getMethod($method);
+        $methodReflection->setAccessible(true);
+        $result = $methodReflection->invokeArgs($object, $args);
+        $methodReflection->setAccessible(false);
+        return $result;
+    }
+
+    
 }

@@ -5,7 +5,9 @@
  */
 namespace Canis\Lumen\Jwt;
 
-class JwtGuard
-    extends BaseJwtGuard
+interface SubjectInterface
 {
+    public function getJWTSubject();
+
+    public function getJWTClaims();
 }

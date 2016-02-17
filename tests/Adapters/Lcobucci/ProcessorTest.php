@@ -3,12 +3,13 @@
  * @copyright Copyright (c) 2016 Canis.io
  * @license   MIT
  */
-namespace CanisUnit\Lumen\Jwt;
+namespace CanisUnit\Lumen\Jwt\Adapters\Lcobucci;
 
-use Canis\Lumen\Jwt\JwtParser;
+use CanisUnit\Lumen\Jwt\BaseTestCase;
+use Canis\Lumen\Jwt\Adapters\Lcobucci\Processor;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 
-class JwtParserTest extends BaseTestCase
+class ProcessorTest extends BaseTestCase
 {
 
     public function testAudience()
@@ -17,7 +18,7 @@ class JwtParserTest extends BaseTestCase
         $config = ['audience' => $audience];
         $testToken = $this->getValidToken($config);
         $tokenStr = (string) $testToken;
-        $parser = new JwtParser($this->getConfig($config));
+        $parser = new Processor($this->getJwtConfig($config));
         define('JWT_DEBUG', true);
         $token = $parser($tokenStr);
         $this->assertEquals($testToken->getClaim('aud'), $token->getClaim('aud'));
@@ -30,7 +31,7 @@ class JwtParserTest extends BaseTestCase
         $config = ['issuer' => $issuer];
         $testToken = $this->getValidToken($config);
         $tokenStr = (string) $testToken;
-        $parser = new JwtParser($this->getConfig($config));
+        $parser = new Processor($this->getJwtConfig($config));
         $token = $parser($tokenStr);
         $this->assertEquals($testToken->getClaim('iss'), $token->getClaim('iss'));
     }
@@ -39,7 +40,7 @@ class JwtParserTest extends BaseTestCase
     {
         $tokenStr = (string) $this->getValidToken();
         $tokenStr .= 'a';
-        $parser = new JwtParser($this->getConfig());
+        $parser = new Processor($this->getJwtConfig());
         $token = $parser($tokenStr);
         $this->assertFalse($token);
     }
@@ -47,7 +48,7 @@ class JwtParserTest extends BaseTestCase
     public function testOldToken()
     {
         $tokenStr = (string) $this->getExpiredToken();
-        $parser = new JwtParser($this->getConfig());
+        $parser = new Processor($this->getJwtConfig());
         $token = $parser($tokenStr);
         $this->assertFalse($token);
     }
@@ -55,7 +56,7 @@ class JwtParserTest extends BaseTestCase
     public function testNotReadyToken()
     {
         $tokenStr = (string) $this->getNotReadyToken();
-        $parser = new JwtParser($this->getConfig());
+        $parser = new Processor($this->getJwtConfig());
         $token = $parser($tokenStr);
         $this->assertFalse($token);
     }
@@ -63,7 +64,7 @@ class JwtParserTest extends BaseTestCase
     public function testTokenWithoutClaims()
     {
         $tokenStr = (string) $this->getNotReadyToken();
-        $parser = new JwtParser($this->getConfig(['requiredClaims' => ['boooom']]));
+        $parser = new Processor($this->getJwtConfig(['requiredClaims' => ['boooom']]));
         $token = $parser($tokenStr);
         $this->assertFalse($token);
     }

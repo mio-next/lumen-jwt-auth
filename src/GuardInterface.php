@@ -5,6 +5,6 @@
  */
 namespace Canis\Lumen\Jwt;
 
-interface JwtGuardInterface
+interface GuardInterface
 {
 }

@@ -3,16 +3,18 @@
  * @copyright Copyright (c) 2016 Canis.io
  * @license   MIT
  */
-namespace Canis\Lumen\Jwt;
+namespace Canis\Lumen\Jwt\Adapters\Lcobucci;
 
+use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
 
-class JwtParser
-    extends JwtHelperBase
+class Processor
+    extends HelperBase
+    implements ProcessorContract
 {
     /**
      * Parses and validates token

@@ -12,10 +12,11 @@ use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Exceptions\InvalidTokenException;
+use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
+use Canis\Lumen\Jwt\Exceptions\InvalidAdapterException;
 
-abstract class BaseJwtGuard
-    implements Guard, JwtGuardInterface
+abstract class BaseGuard
+    implements Guard, GuardInterface
 {
     use GuardHelpers;
 
@@ -29,16 +30,47 @@ abstract class BaseJwtGuard
         $this->provider = Auth::createUserProvider($provider);
     }
 
-    protected function getTokenProcessor()
+    public function getAdapterFactoryClass()
     {
         $config = config('jwt');
-        return new JwtParser($config);
+        if (!isset($config['adapter'])) {
+            $config['adapter'] = 'lcobucci';
+        }
+        if (class_exists($config['adapter'])) {
+            $factoryClass = $config['adapter'];
+        } else {
+            $factoryClass = 'Canis\Lumen\Jwt\Adapters\\' . ucfirst($config['adapter']) .'\Factory';
+            if (!class_exists($factoryClass)) {
+                throw new InvalidAdapterException("{$config['adapter']} is not available");
+            }
+        }
+        return $factoryClass;
+    }
+
+    protected function getAdapterFactory()
+    {
+        static $factory;
+        if (!isset($factory)) {
+            $config = config('jwt');
+            $factoryClass = $this->getAdapterFactoryClass();
+            $factory = new $factoryClass($config);
+        }
+        return $factory;
+    }
+
+    protected function getProcessor()
+    {
+        return $this->getAdapterFactory()->getProcessor();
     }
 
     protected function getGenerator()
     {
-        $config = config('jwt');
-        return new JwtGenerator($config);
+        return $this->getAdapterFactory()->getGenerator();
+    }
+
+    public function getProvider()
+    {
+        return $this->provider;
     }
 
     /**
@@ -52,7 +84,7 @@ abstract class BaseJwtGuard
         $user = null;
         $token = $this->getBearerToken();
         if ($token !== false) {
-            $user = $this->provider->retrieveById($token->getClaim('sub'));
+            $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
         }
         return $this->user = $user;
     }
@@ -67,7 +99,7 @@ abstract class BaseJwtGuard
             return false;
         }
         $token = trim(str_ireplace('bearer', '', $authHeader));
-        $processor = $this->getTokenProcessor();
+        $processor = $this->getProcessor();
         return $processor($token);
     }
 
@@ -76,7 +108,7 @@ abstract class BaseJwtGuard
      */
     public function validate(array $credentials = [])
     {
-        $user = $this->provider->retrieveByCredentials($credentials);
+        $user = $this->getProvider()->retrieveByCredentials($credentials);
         if ($this->hasValidCredentials($user, $credentials)) {
             return true;
         }
@@ -96,7 +128,7 @@ abstract class BaseJwtGuard
      */
     public function attempt(array $credentials = [])
     {
-        $user = $this->provider->retrieveByCredentials($credentials);
+        $user = $this->getProvider()->retrieveByCredentials($credentials);
         if ($this->hasValidCredentials($user, $credentials)) {
             $tokenGenerator = $this->getGenerator();
             $claims = $user->getJWTClaims();

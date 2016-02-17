@@ -3,30 +3,31 @@
  * @copyright Copyright (c) 2016 Canis.io
  * @license   MIT
  */
-namespace Canis\Lumen\Jwt;
+namespace Canis\Lumen\Jwt\Adapters\Lcobucci;
 
-use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Token;
+use Canis\Lumen\Jwt\Contracts\Generator as GeneratorContract;
 
-class JwtGenerator
-    extends JwtHelperBase
+class Generator
+    extends HelperBase
+    implements GeneratorContract
 {
     /**
      * Generates the token
      * @param  array $claims
      * @return Token
      */
-    final public function __invoke($claims)
+    final public function __invoke(array $claims)
     {
         $signer = new Sha256();
         $builder = new Builder();
         $claims = array_merge($this->getDefaultClaims(), $claims, $this->getForcedClaims());
         if (!$this->checkRequiredClaims(array_keys($claims))) {
-            throw new InvalidTokenException("Attempted to create token without required claims");
+            return false;
         };
         foreach ($claims as $claim => $value) {
             if ($this->isBadClaim($claim)) {

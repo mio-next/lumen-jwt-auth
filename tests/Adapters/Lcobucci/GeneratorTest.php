@@ -3,32 +3,33 @@
  * @copyright Copyright (c) 2016 Canis.io
  * @license   MIT
  */
-namespace CanisUnit\Lumen\Jwt;
+namespace CanisUnit\Lumen\Jwt\Adapters\Lcobucci;
 
-use Canis\Lumen\Jwt\JwtGenerator;
+use CanisUnit\Lumen\Jwt\BaseTestCase;
+use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 
-class JwtGeneratorTest extends BaseTestCase
+class GeneratorTest extends BaseTestCase
 {
   /**
     * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidTokenException
     */
     public function testNoSecret()
     {
-        $generator = new JwtGenerator([]);
+        $generator = new Generator([]);
         $token = $generator(['sub' => 'test']);
     }
 
     public function testGenerator()
     {
-        $generator = new JwtGenerator($this->getConfig());
+        $generator = new Generator($this->getJwtConfig());
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
     }
 
     public function testBadClaim()
     {
-        $generator = new JwtGenerator($this->getConfig());
+        $generator = new Generator($this->getJwtConfig());
         $token = $generator(['jti' => 'test', 'sub' => 'test']);
         $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
     }
@@ -36,7 +37,7 @@ class JwtGeneratorTest extends BaseTestCase
     public function testAudience()
     {
         $audience = 'AAA';
-        $generator = new JwtGenerator($this->getConfig(['audience' => $audience]));
+        $generator = new Generator($this->getJwtConfig(['audience' => $audience]));
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
         $this->assertEquals($audience, $token->getClaim('aud'));
@@ -46,18 +47,15 @@ class JwtGeneratorTest extends BaseTestCase
     public function testIssuer()
     {
         $issuer = 'AAA.com';
-        $generator = new JwtGenerator($this->getConfig(['issuer' => $issuer]));
+        $generator = new Generator($this->getJwtConfig(['issuer' => $issuer]));
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof \Lcobucci\JWT\Token);
         $this->assertEquals($issuer, $token->getClaim('iss'));
     }
 
-    /**
-    * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidTokenException
-    */
    public function testNoSubject()
    {
-       $generator = new JwtGenerator($this->getConfig());
-       $token = $generator([]);
+       $generator = new Generator($this->getJwtConfig());
+       $this->assertFalse($generator([]));
    }
 }
