@@ -12,7 +12,7 @@ interface Processor
     /**
      * Processes a string token
      * @param  string  $tokenString
-     * @return Token
+     * @return Token|boolean
      */
     public function __invoke($tokenString);
 }

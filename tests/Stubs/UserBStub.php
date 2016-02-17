@@ -5,7 +5,7 @@
  */
 namespace CanisUnit\Lumen\Jwt\Stubs;
 
-use Canis\Lumen\Jwt\SubjectInterface as JwtSubjectInterface;
+use Canis\Lumen\Jwt\Contracts\Subject as JwtSubjectInterface;
 use Illuminate\Http\Request;
 
 class UserBStub implements JwtSubjectInterface
@@ -22,7 +22,7 @@ class UserBStub implements JwtSubjectInterface
         return 'user-test-2';
     }
 
-    public function getJWTSubjectType()
+    public function getJWTSubjectProvider()
     {
         return 'user';
     }

@@ -14,6 +14,7 @@ use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Canis\Lumen\Jwt\Exceptions\InvalidAdapterException;
 use Canis\Lumen\Jwt\Contracts\AdapterFactory as AdapterFactoryContract;
 use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
+use Canis\Lumen\Jwt\Contracts\Subject as SubjectContract;
 
 abstract class BaseGuard
     implements GaurdContract, GuardInterface
@@ -124,7 +125,7 @@ abstract class BaseGuard
     /**
      * Get's the bearer token from the request header
      * 
-     * @return Token
+     * @return Token|boolean
      */
     public function getBearerToken()
     {
@@ -194,10 +195,13 @@ abstract class BaseGuard
     {
         $user = $this->getProvider()->retrieveByCredentials($credentials);
         if ($this->hasValidCredentials($user, $credentials)) {
+            if (!($user instanceof SubjectContract)) {
+                throw new InvalidTokenException("Unable to generate token");
+            }
             $tokenGenerator = $this->getGenerator();
             $claims = $user->getJWTClaims();
             $claims['sub'] = $user->getJWTSubject();
-            $claims['type'] = $user->getJWTSubjectType();
+            $claims['type'] = $user->getJWTSubjectProvider();
             if (!($token = $tokenGenerator($claims))) {
                 throw new InvalidTokenException("Unable to generate token");
             }

@@ -12,7 +12,7 @@ interface Generator
     /**
      * Generates new token from a set of claims
      * @param  array  $claims
-     * @return Token
+     * @return Token|boolean
      */
     public function __invoke(array $claims);
 }

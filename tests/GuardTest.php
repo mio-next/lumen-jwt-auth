@@ -132,6 +132,18 @@ class GuardTest extends BaseTestCase
     }
 
     /**
+    * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidTokenException
+    */
+    public function testBadUserAttempt()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveByCredentials')->andReturn(new Stubs\BadUserStub());
+        $provider->shouldReceive('validateCredentials')->withAnyArgs()->andReturn(true);
+        $guard = new Guard($provider, $this->getValidTokenRequest());
+        $token = $guard->attempt(['user' => 'test', 'password' => 'test']);
+    }
+
+    /**
     * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidAdapterException
     */
     public function testUnknownFactory()

@@ -5,7 +5,7 @@
  */
 namespace CanisUnit\Lumen\Jwt\Stubs;
 
-use Canis\Lumen\Jwt\SubjectInterface as JwtSubjectInterface;
+use Canis\Lumen\Jwt\Contracts\Subject as JwtSubjectInterface;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
@@ -31,7 +31,7 @@ class UserStub implements
         return 'user-test-1';
     }
 
-    public function getJWTSubjectType()
+    public function getJWTSubjectProvider()
     {
         return 'user';
     }
