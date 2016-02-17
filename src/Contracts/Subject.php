@@ -22,8 +22,9 @@ interface Subject
     public function getJWTSubjectProvider();
 
     /**
-     * [getJWTClaims description]
-     * @return [type] [description]
+     * Get the claims
+     * 
+     * @return array
      */
     public function getJWTClaims();
 }
