@@ -30,9 +30,4 @@ class UserStub implements
     {
         return 'user-test-1';
     }
-
-    public function getJWTSubjectProvider()
-    {
-        return 'user';
-    }
 }

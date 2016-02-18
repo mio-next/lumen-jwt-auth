@@ -8,6 +8,10 @@ return [
         'jwt' => [
             'driver' => 'jwt',
             'provider' => 'users',
+        ],
+        'jwt-alt' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
         ]
     ],
     'providers' => [

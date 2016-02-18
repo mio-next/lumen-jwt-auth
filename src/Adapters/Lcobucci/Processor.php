@@ -16,11 +16,9 @@ class Processor
     implements ProcessorContract
 {
     /**
-     * Parses and validates token
-     * @param  string $tokenString
-     * @return Token
+     * @inheritdoc
      */
-    final public function __invoke($tokenString)
+    final public function __invoke($tokenString, $validateClaims = [])
     {
         $token = (new Parser())->parse((string) $tokenString);
         $signer = new Sha256();
@@ -40,6 +38,15 @@ class Processor
         if (!$token->validate($data)) {
             return false;
         }
-        return new Token((string) $token, $token->getClaims());
+        $claims = $token->getClaims();
+        foreach ($claims as $key => $value) {
+            $claims[$key] = $value->getValue();
+        }
+        foreach ($validateClaims as $claim => $value) {
+            if (!isset($claims[$claim]) || $claims[$claim] !== $value) {
+                return false;
+            }
+        }
+        return new Token((string) $token, $claims);
     }
 }

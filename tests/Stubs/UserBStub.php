@@ -21,9 +21,4 @@ class UserBStub implements JwtSubjectInterface
     {
         return 'user-test-2';
     }
-
-    public function getJWTSubjectProvider()
-    {
-        return 'user';
-    }
 }

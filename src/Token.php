@@ -41,6 +41,17 @@ class Token
         return null;
     }
 
+
+    /**
+     * Check for a specific claim
+     * @param  string $claim Name of claim
+     * @return mixed         Null on not found
+     */
+    public function hasClaim($claim)
+    {
+        return array_key_exists($claim, $this->claims);
+    }
+
     /**
      * Get all claims
      * 

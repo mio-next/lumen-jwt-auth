@@ -22,6 +22,15 @@ class TokenTest extends BaseTestCase
         $this->assertEquals($token->getClaim('test'), 'claim');
         $this->assertEquals($token->getClaim('boom'), null);
     }
+
+
+    public function testHasClaim()
+    {
+        $token = $this->getBasicToken(['test' => 'claim']);
+        $this->assertTrue($token->hasClaim('test'));
+        $this->assertFalse($token->hasClaim('boom'));
+    }
+
     public function testGetClaims()
     {
         $claims = ['test' => 'claim'];

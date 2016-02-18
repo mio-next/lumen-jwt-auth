@@ -8,6 +8,7 @@ namespace Canis\Lumen\Jwt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Auth\GuardHelpers;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Guard as GaurdContract;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
@@ -21,26 +22,34 @@ abstract class BaseGuard
 {
     use GuardHelpers;
 
+    const JWT_GUARD_CLAIM = 'gua';
+
     /**
      * @var Request
      */
     protected $request;
 
     /**
+     * @var string
+     */
+    protected $providerName;
+
+    /**
      * Constructor
-     * 
+     *
      * @param UserProvider $provider
      * @param Request      $request
      */
-    public function __construct(UserProvider $provider, Request $request)
+    public function __construct($id, UserProvider $provider, Request $request)
     {
         $this->request = $request;
         $this->provider = $provider;
+        $this->id = $id;
     }
 
     /**
      * Returns the adapter class name to use
-     * 
+     *
      * @return string
      */
     public function getAdapterFactoryClass()
@@ -62,7 +71,7 @@ abstract class BaseGuard
 
     /**
      * Returns the adapter factory object
-     * 
+     *
      * @return AdapterFactoryContract
      */
     protected function getAdapterFactory()
@@ -78,7 +87,7 @@ abstract class BaseGuard
 
     /**
      * Returns a token processor from the adapter factory
-     * 
+     *
      * @return ProcessorContract
      */
     protected function getProcessor()
@@ -88,7 +97,7 @@ abstract class BaseGuard
 
     /**
      * Returns a token generator from the adapter factory
-     * 
+     *
      * @return GeneratorContract
      */
     protected function getGenerator()
@@ -98,12 +107,29 @@ abstract class BaseGuard
 
     /**
      * Gets the provider
-     * 
+     *
      * @return UserProvider
      */
     public function getProvider()
     {
         return $this->provider;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function universalUserLogin(AuthFactory $auth)
+    {
+        $token = $this->getBearerToken(true);
+        $guard = false;
+        if ($token !== false && $token->hasClaim(static::JWT_GUARD_CLAIM)) {
+            $guard = $token->getClaim(static::JWT_GUARD_CLAIM);
+            $user = $auth->guard($guard)->user();
+            if ($user === null) {
+                $guard = false;
+            }
+        }
+        return $guard;
     }
 
     /**
@@ -124,21 +150,21 @@ abstract class BaseGuard
 
     /**
      * Get's the bearer token from the request header
-     * 
+     *
      * @return Token|boolean
      */
-    public function getBearerToken()
+    public function getBearerToken($allowForeign = false)
     {
-        $authHeader = $this->request->headers->get('Authorization');
-        if (empty($authHeader)) {
+        $token = $this->request->bearerToken();
+        if (empty($token)) {
             return false;
         }
-        if (!Str::startsWith(strtolower($authHeader), 'bearer')) {
-            return false;
+        $claimValidation = [];
+        if (!$allowForeign) {
+            $claimValidation[static::JWT_GUARD_CLAIM] = $this->id;
         }
-        $token = trim(str_ireplace('bearer', '', $authHeader));
         $processor = $this->getProcessor();
-        return $processor($token);
+        return $processor($token, $claimValidation);
     }
 
     /**
@@ -167,7 +193,7 @@ abstract class BaseGuard
 
     /**
      * Sets the Request
-     * 
+     *
      * @param Request $request
      */
     public function setRequest(Request $request)
@@ -177,7 +203,7 @@ abstract class BaseGuard
 
     /**
      * Gets the request
-     * 
+     *
      * @return Request
      */
     public function getRequest()
@@ -201,7 +227,7 @@ abstract class BaseGuard
             $tokenGenerator = $this->getGenerator();
             $claims = $user->getJWTClaims();
             $claims['sub'] = $user->getJWTSubject();
-            $claims['type'] = $user->getJWTSubjectProvider();
+            $claims[static::JWT_GUARD_CLAIM] = $this->id;
             if (!($token = $tokenGenerator($claims))) {
                 throw new InvalidTokenException("Unable to generate token");
             }

@@ -12,7 +12,8 @@ interface Processor
     /**
      * Processes a string token
      * @param  string  $tokenString
+     * @param  array   $validateClaims
      * @return Token|boolean
      */
-    public function __invoke($tokenString);
+    public function __invoke($tokenString, $validateClaims = []);
 }

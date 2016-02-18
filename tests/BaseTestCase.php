@@ -9,6 +9,7 @@ use Auth;
 use Illuminate\Http\Request;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
 use Canis\Lumen\Jwt\ServiceProvider as JwtServiceProvider;
+use Canis\Lumen\Jwt\Guard as JwtGuard;
 
 abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
 {
@@ -55,22 +56,22 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
         ], $config);
     }
 
-    protected function getValidToken($config = [])
+    protected function getValidToken($config = [], $claims = [])
     {
         $generator = new Generator($this->getJwtConfig($config));
-        return $generator(['sub' => 'test']);
+        return $generator(array_merge(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt'], $claims));
     }
 
     protected function getExpiredToken()
     {
         $generator = new Generator($this->getJwtConfig(['expOffset' => -1]));
-        return $generator(['sub' => 'test']);
+        return $generator(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt']);
     }
 
     protected function getNotReadyToken()
     {
         $generator = new Generator($this->getJwtConfig(['nbfOffset' => 3600]));
-        return $generator(['sub' => 'test']);
+        return $generator(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt']);
     }
 
     protected function invoke($object, $method, array $args = [])
