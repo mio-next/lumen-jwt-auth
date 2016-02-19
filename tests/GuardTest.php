@@ -237,6 +237,7 @@ class GuardTest extends BaseTestCase
         $token = $guard->attempt(['user' => 'test', 'password' => 'test']);
         $this->assertEquals($config['adapter']['issuer'], $token->getClaim('iss'));
     }
+    
     /**
     * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidTokenException
     */

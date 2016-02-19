@@ -81,16 +81,16 @@ abstract class BaseGuard
      */
     protected function getAdapterFactory()
     {
-        static $factory;
-        if (!isset($factory)) {
+        static $factory = [];
+        if (!isset($factory[$this->id])) {
             $config = config('jwt');
             if (isset($this->config['adapter'])) {
                 $config = array_merge($config, $this->config['adapter']);
             }
             $factoryClass = $this->getAdapterFactoryClass();
-            $factory = new $factoryClass($config);
+            $factory[$this->id] = new $factoryClass($config);
         }
-        return $factory;
+        return $factory[$this->id];
     }
 
     /**
