@@ -6,7 +6,6 @@
 namespace Canis\Lumen\Jwt;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\UserProvider;
