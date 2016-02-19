@@ -5,5 +5,5 @@ return [
     'secret' => env('JWT_SECRET'),
     'expOffset' => env('JWT_TTL', 3600),
     'jtiInHeader' => env('JWT_JTI_HEADER', false),
-    'requiredClaims' => ['iat', 'iss', 'exp', 'nbf', 'sub', 'gua', 'jti']
+    'requiredClaims' => ['iat', 'iss', 'exp', 'nbf', 'sub', 'grd', 'jti']
 ];
