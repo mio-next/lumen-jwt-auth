@@ -21,7 +21,7 @@ abstract class AbstractFactory
      */
     public function __construct(array $config = [])
     {
-        $this->config = $config;
+        $this->config = array_merge($this->getDefaultConfig(), $config);
     }
 
     /**
@@ -33,4 +33,13 @@ abstract class AbstractFactory
         return $this->config;
     }
 
+    /**
+     * Get default config
+     * 
+     * @return array
+     */
+    protected function getDefaultConfig()
+    {
+        return [];
+    }
 }

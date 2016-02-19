@@ -6,6 +6,7 @@
 namespace CanisUnit\Lumen\Jwt\Adapters\Lcobucci;
 
 use CanisUnit\Lumen\Jwt\BaseTestCase;
+use Canis\Lumen\Jwt\Adapters\Lcobucci\Factory;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
 use Canis\Lumen\Jwt\Token;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
@@ -17,20 +18,23 @@ class GeneratorTest extends BaseTestCase
     */
     public function testNoSecret()
     {
-        $generator = new Generator([]);
+        $factory = new Factory([]);
+        $generator = $factory->getGenerator();
         $token = $generator(['sub' => 'test']);
     }
 
     public function testGenerator()
     {
-        $generator = new Generator($this->getJwtConfig());
+        $factory = new Factory($this->getJwtConfig());
+        $generator = $factory->getGenerator();
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof Token);
     }
 
     public function testBadClaim()
     {
-        $generator = new Generator($this->getJwtConfig());
+        $factory = new Factory($this->getJwtConfig());
+        $generator = $factory->getGenerator();
         $token = $generator(['jti' => 'test', 'sub' => 'test']);
         $this->assertTrue($token instanceof Token);
     }
@@ -38,7 +42,8 @@ class GeneratorTest extends BaseTestCase
     public function testAudience()
     {
         $audience = 'AAA';
-        $generator = new Generator($this->getJwtConfig(['audience' => $audience]));
+        $factory = new Factory($this->getJwtConfig($this->getJwtConfig(['audience' => $audience])));
+        $generator = $factory->getGenerator();
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof Token);
         $this->assertEquals($audience, $token->getClaim('aud'));
@@ -48,7 +53,8 @@ class GeneratorTest extends BaseTestCase
     public function testIssuer()
     {
         $issuer = 'AAA.com';
-        $generator = new Generator($this->getJwtConfig(['issuer' => $issuer]));
+        $factory = new Factory($this->getJwtConfig($this->getJwtConfig(['issuer' => $issuer])));
+        $generator = $factory->getGenerator();
         $token = $generator(['sub' => 'test']);
         $this->assertTrue($token instanceof Token);
         $this->assertEquals($issuer, $token->getClaim('iss'));
@@ -56,7 +62,8 @@ class GeneratorTest extends BaseTestCase
 
    public function testNoSubject()
    {
-       $generator = new Generator($this->getJwtConfig());
-       $this->assertFalse($generator([]));
+        $factory = new Factory($this->getJwtConfig($this->getJwtConfig()));
+        $generator = $factory->getGenerator();
+        $this->assertFalse($generator([]));
    }
 }

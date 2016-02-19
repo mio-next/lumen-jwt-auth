@@ -8,6 +8,7 @@ namespace CanisUnit\Lumen\Jwt;
 use Auth;
 use Illuminate\Http\Request;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
+use Canis\Lumen\Jwt\Adapters\Lcobucci\Factory;
 use Canis\Lumen\Jwt\ServiceProvider as JwtServiceProvider;
 use Canis\Lumen\Jwt\Guard as JwtGuard;
 
@@ -58,19 +59,22 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
 
     protected function getValidToken($config = [], $claims = [])
     {
-        $generator = new Generator($this->getJwtConfig($config));
+        $factory = new Factory($this->getJwtConfig($config));
+        $generator = $factory->getGenerator();
         return $generator(array_merge(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt'], $claims));
     }
 
     protected function getExpiredToken()
     {
-        $generator = new Generator($this->getJwtConfig(['expOffset' => -1]));
+        $factory = new Factory($this->getJwtConfig(['expOffset' => -1]));
+        $generator = $factory->getGenerator();
         return $generator(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt']);
     }
 
     protected function getNotReadyToken()
     {
-        $generator = new Generator($this->getJwtConfig(['nbfOffset' => 3600]));
+        $factory = new Factory($this->getJwtConfig(['nbfOffset' => 3600]));
+        $generator = $factory->getGenerator();
         return $generator(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt']);
     }
 
