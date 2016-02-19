@@ -34,15 +34,21 @@ abstract class BaseGuard
     protected $request;
 
     /**
+     * @var array
+     */
+    protected $config;
+
+    /**
      * Constructor
      *
      * @param UserProvider $provider
      * @param Request      $request
      */
-    public function __construct($id, UserProvider $provider, Request $request)
+    public function __construct($id, UserProvider $provider, Request $request, array $config = [])
     {
         $this->request = $request;
         $this->provider = $provider;
+        $this->config = $config;
         $this->id = $id;
     }
 
@@ -78,6 +84,9 @@ abstract class BaseGuard
         static $factory;
         if (!isset($factory)) {
             $config = config('jwt');
+            if (isset($this->config['adapter'])) {
+                $config = array_merge($config, $this->config['adapter']);
+            }
             $factoryClass = $this->getAdapterFactoryClass();
             $factory = new $factoryClass($config);
         }

@@ -227,6 +227,16 @@ class GuardTest extends BaseTestCase
         $this->assertTrue($token instanceof Token);
     }
 
+    public function testCustomAdapterConfig()
+    {
+        $config = ['adapter' => ['issuer' => 'http://special.case']];
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveByCredentials')->andReturn(new Stubs\UserStub());
+        $provider->shouldReceive('validateCredentials')->withAnyArgs()->andReturn(true);
+        $guard = new Guard('jwt', $provider, $this->getRequest(), $config);
+        $token = $guard->attempt(['user' => 'test', 'password' => 'test']);
+        $this->assertEquals($config['adapter']['issuer'], $token->getClaim('iss'));
+    }
     /**
     * @expectedException Canis\Lumen\Jwt\Exceptions\InvalidTokenException
     */
