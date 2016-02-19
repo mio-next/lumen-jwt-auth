@@ -10,6 +10,7 @@ use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\Token as JwtToken;
 
 class Processor
     extends HelperBase
@@ -22,12 +23,31 @@ class Processor
     {
         $token = (new Parser())->parse((string) $tokenString);
         $signer = new Sha256();
-        if (!$token->verify($signer, $this->config['secret'])) {
-            return false;
-        }
-        if (!$this->checkRequiredClaims(array_keys($token->getClaims()))) {
+        $claims = $token->getClaims();
+        if (
+                !$token->verify($signer, $this->config['secret']) 
+            ||  !$this->checkRequiredClaims(array_keys($claims))
+            ||  !$this->validateToken($token)
+        ) {
             return false;
         };
+        foreach ($claims as $key => $value) {
+            $claims[$key] = $value->getValue();
+        }
+        if (!$this->validateClaims($claims, $validateClaims)) {
+            return false;
+        }
+        return new Token((string) $token, $claims);
+    }
+
+    /**
+     * Validate token with validation data
+     * 
+     * @param  JwtToken $token
+     * @return boolean
+     */
+    private function validateToken(JwtToken $token)
+    {
         $data = new ValidationData();
         if (isset($this->config['issuer'])) {
             $data->setIssuer($this->config['issuer']);
@@ -38,15 +58,23 @@ class Processor
         if (!$token->validate($data)) {
             return false;
         }
-        $claims = $token->getClaims();
-        foreach ($claims as $key => $value) {
-            $claims[$key] = $value->getValue();
-        }
+        return true;
+    }
+
+    /**
+     * Validate the claims of the token
+     * 
+     * @param  array $claims
+     * @param  array $validateClaims
+     * @return boolean
+     */
+    private function validateClaims($claims, $validateClaims)
+    {
         foreach ($validateClaims as $claim => $value) {
             if (!isset($claims[$claim]) || $claims[$claim] !== $value) {
                 return false;
             }
         }
-        return new Token((string) $token, $claims);
+        return true;
     }
 }
