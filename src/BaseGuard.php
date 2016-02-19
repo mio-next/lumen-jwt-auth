@@ -144,7 +144,6 @@ abstract class BaseGuard
         $token = $this->getBearerToken();
         if ($token !== false) {
             $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
-            $processor = $this->getProcessor();
             if (!($user instanceof SubjectContract)
                 || !$token->ensureClaimValues(array_merge($user->getJWTClaimValidation(), $claimValidation))) {
                 $user = null;
