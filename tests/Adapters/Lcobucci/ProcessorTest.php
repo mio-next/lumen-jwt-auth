@@ -46,6 +46,32 @@ class ProcessorTest extends BaseTestCase
         $this->assertFalse($token);
     }
 
+    public function testRefreshTokenOld()
+    {
+        $tokenStr = (string) $this->getExpiredToken(-2);
+        $parser = new Processor($this->getJwtConfig(['refreshOffsetAllowance' => 1]));
+        $token = $parser($tokenStr, true);
+        $this->assertFalse($token);
+    }
+
+    public function testRefreshTokenExpired()
+    {
+        $token = $this->getExpiredToken(0);
+        $tokenStr = (string) $token;
+        $parser = new Processor($this->getJwtConfig(['refreshOffsetAllowance' => 2]));
+        $tokenResult = $parser($tokenStr, true);
+        $this->assertEquals($token->getClaim('jti'), $tokenResult->getClaim('jti'));
+    }
+
+    public function testRefreshTokenFresh()
+    {
+        $token = $this->getExpiredToken(5);
+        $tokenStr = (string) $token;
+        $parser = new Processor($this->getJwtConfig(['refreshOffsetAllowance' => 2]));
+        $tokenResult = $parser($tokenStr, true);
+        $this->assertEquals($token->getClaim('jti'), $tokenResult->getClaim('jti'));
+    }
+
     public function testOldToken()
     {
         $tokenStr = (string) $this->getExpiredToken();

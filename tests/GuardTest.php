@@ -115,25 +115,63 @@ class GuardTest extends BaseTestCase
     }
 
 
-    // public function testBearerTokenForeignAllow()
-    // {
-    //     $provider = Mockery::mock(UserProvider::class);
-    //     $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
-    //     $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
-    //     $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
-    //     $bearerToken = $guard->getBearerToken(true);
-    //     $this->assertEquals((string) $token, $bearerToken);
-    // }
+    public function testRefreshOkay()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
+        $token = $this->getValidToken([], ['sub' => 'user-test-1']);
+        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
 
-    // public function testBearerTokenForeignFail()
-    // {
-    //     $provider = Mockery::mock(UserProvider::class);
-    //     $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
-    //     $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
-    //     $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
-    //     $bearerToken = $guard->getBearerToken();
-    //     $this->assertFalse($bearerToken);
-    // }
+        $auth = Mockery::mock(AuthFactory::class);
+        $auth->shouldReceive('guard')->with('jwt')->andReturn($guard);
+
+        $newToken = $guard->refresh($auth);
+        $this->assertEquals($token->getClaim('sub'), $newToken->getClaim('sub'));
+    }
+
+
+    public function testRefreshExpired()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
+        $token = $this->getValidToken([], ['sub' => 'user-test-1', 'exp' => time()-1]);
+        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
+
+        $auth = Mockery::mock(AuthFactory::class);
+        $auth->shouldReceive('guard')->with('jwt')->andReturn($guard);
+
+        $newToken = $guard->refresh($auth);
+        $this->assertEquals($token->getClaim('sub'), $newToken->getClaim('sub'));
+    }
+
+
+    public function testRefreshTooOld()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
+        $token = $this->getValidToken([], ['sub' => 'user-test-1', 'exp' => time()-4100]);
+        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
+
+        $auth = Mockery::mock(AuthFactory::class);
+        $auth->shouldReceive('guard')->with('jwt')->andReturn($guard);
+
+        $newToken = $guard->refresh($auth);
+        $this->assertFalse($newToken);
+    }
+
+    public function testRefreshNotValid()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\NeedyUserStub());
+        $token = $this->getValidToken([], ['sub' => 'user-test-1']);
+        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
+
+        $auth = Mockery::mock(AuthFactory::class);
+        $auth->shouldReceive('guard')->with('jwt')->andReturn($guard);
+
+        $newToken = $guard->refresh($auth);
+        $this->assertFalse($newToken);
+    }
 
     public function testBadBearerToken()
     {

@@ -32,10 +32,7 @@ class Factory
     final protected function getDefaultConfig()
     {
         return array_merge(parent::getDefaultConfig(), [
-            'jtiInHeader' => false,
-            'expOffset' => 3600,
-            'nbfOffset' => 0,
-            'requiredClaims' => ['iat', 'exp', 'nbf', 'sub', 'jti']
+            'jtiInHeader' => false
         ]);
     }
 }

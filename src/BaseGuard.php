@@ -114,10 +114,40 @@ abstract class BaseGuard
         return $this->provider;
     }
 
+
     /**
      * @inheritdoc
      */
-    public function universalUserLogin(AuthFactory $auth, $claimValidation = [])
+    public function refresh(AuthFactory $auth)
+    {
+        $token = $this->getBearerToken(true);
+        if ($token !== false && $token->hasClaim(static::JWT_GUARD_CLAIM)) {
+            $guard = $token->getClaim(static::JWT_GUARD_CLAIM);
+            return $auth->guard($guard)->refreshToken($token);
+        }
+        return false;
+    }
+
+    /**
+     * Refresh the token 
+     * @param  Token  $token
+     * @return Token|boolean  New token or false if old token can't be verified
+     */
+    public function refreshToken(Token $token)
+    {
+        $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
+        $claimValidation = [static::JWT_GUARD_CLAIM => $this->id];
+        if (!($user instanceof SubjectContract)
+            || !$token->ensureClaimValues(array_merge($user->getJWTClaimValidation(), $claimValidation))) {
+            return false;
+        }
+        return $this->generateToken($user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function universalUserLogin(AuthFactory $auth)
     {
         $token = $this->getBearerToken();
         $guard = false;
@@ -140,10 +170,10 @@ abstract class BaseGuard
             return $this->user;
         }
         $user = null;
-        $claimValidation = [static::JWT_GUARD_CLAIM => $this->id];
         $token = $this->getBearerToken();
         if ($token !== false) {
             $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
+            $claimValidation = [static::JWT_GUARD_CLAIM => $this->id];
             if (!($user instanceof SubjectContract)
                 || !$token->ensureClaimValues(array_merge($user->getJWTClaimValidation(), $claimValidation))) {
                 $user = null;
@@ -153,18 +183,16 @@ abstract class BaseGuard
     }
 
     /**
-     * Get's the bearer token from the request header
-     * 
-     * @return Token|boolean
+     * @inheritdoc
      */
-    public function getBearerToken()
+    public function getBearerToken($isRefresh = false)
     {
         $token = $this->request->bearerToken();
         if (empty($token)) {
             return false;
         }
         $processor = $this->getProcessor();
-        return $processor($token);
+        return $processor($token, $isRefresh);
     }
 
     /**
@@ -215,24 +243,35 @@ abstract class BaseGuard
      * Attempt to authenticate a user using the given credentials.
      *
      * @param  array  $credentials
-     * @return bool|string
+     * @return bool|Token
      */
     public function attempt(array $credentials = [])
     {
         $user = $this->getProvider()->retrieveByCredentials($credentials);
-        if ($this->hasValidCredentials($user, $credentials)) {
+        if ($this->hasValidCredentials($user, $credentials)) { 
             if (!($user instanceof SubjectContract)) {
                 throw new InvalidTokenException("Unable to generate token");
             }
-            $tokenGenerator = $this->getGenerator();
-            $claims = $user->getJWTClaims();
-            $claims['sub'] = $user->getJWTSubject();
-            $claims[static::JWT_GUARD_CLAIM] = $this->id;
-            if (!($token = $tokenGenerator($claims))) {
-                throw new InvalidTokenException("Unable to generate token");
-            }
-            return $token;
+            return $this->generateToken($user);
         }
         return false;
+    }
+
+    /**
+     * Generate a new token
+     * 
+     * @param  SubjectContract $user
+     * @return Token
+     */
+    private function generateToken(SubjectContract $user)
+    {
+        $tokenGenerator = $this->getGenerator();
+        $claims = $user->getJWTClaims();
+        $claims['sub'] = $user->getJWTSubject();
+        $claims[static::JWT_GUARD_CLAIM] = $this->id;
+        if (!($token = $tokenGenerator($claims))) {
+            throw new InvalidTokenException("Unable to generate token");
+        }
+        return $token;
     }
 }

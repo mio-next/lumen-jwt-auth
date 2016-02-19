@@ -40,6 +40,11 @@ abstract class AbstractFactory
      */
     protected function getDefaultConfig()
     {
-        return [];
+        return [
+            'refreshOffsetAllowance' => 3600*6,
+            'expOffset' => 3600,
+            'nbfOffset' => 0,
+            'requiredClaims' => ['iat', 'exp', 'nbf', 'sub', 'jti']
+        ];
     }
 }

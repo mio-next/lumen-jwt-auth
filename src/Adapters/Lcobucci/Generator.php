@@ -35,10 +35,15 @@ class Generator
             }
             $builder->set($claim, $value);
         }
-        $builder->setId(substr(hash('sha256', serialize($claims) . openssl_random_pseudo_bytes(20)), 0, 16), $this->config['jtiInHeader']);
+        $jti = substr(hash('sha256', serialize($claims) . openssl_random_pseudo_bytes(20)), 0, 16);
+        $builder->setId($jti, $this->config['jtiInHeader']);
         $builder->sign($signer, $this->config['secret']);
         $token = $builder->getToken();
-        return new Token((string) $token, $token->getClaims());
+        $generatedClaims = $token->getClaims();
+        foreach ($generatedClaims as $key => $value) {
+            $generatedClaims[$key] = $value->getValue();
+        }
+        return new Token((string) $token, $generatedClaims);
     }
 
     /**

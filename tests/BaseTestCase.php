@@ -53,6 +53,8 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
             'issuer' => 'http://test.com',
             'secret' => 'super-secret-test',
             'expOffset' => 3600,
+            'refreshOffsetAllowance' => 4000,
+            'jtiInHeader' => false,
             'requiredClaims' => ['iss', 'iat', 'exp', 'nbf', 'sub', 'jti']
         ], $config);
     }
@@ -64,13 +66,13 @@ abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
         return $generator(array_merge(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt'], $claims));
     }
 
-    protected function getExpiredToken()
+    protected function getExpiredToken($offset = -1)
     {
-        $factory = new Factory($this->getJwtConfig(['expOffset' => -1]));
+        $factory = new Factory($this->getJwtConfig(['expOffset' => $offset]));
         $generator = $factory->getGenerator();
         return $generator(['sub' => 'test', JwtGuard::JWT_GUARD_CLAIM => 'jwt']);
     }
-
+    
     protected function getNotReadyToken()
     {
         $factory = new Factory($this->getJwtConfig(['nbfOffset' => 3600]));
