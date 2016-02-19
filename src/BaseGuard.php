@@ -25,14 +25,14 @@ abstract class BaseGuard
     const JWT_GUARD_CLAIM = 'gua';
 
     /**
+     * @var string
+     */
+    protected $id;
+
+    /**
      * @var Request
      */
     protected $request;
-
-    /**
-     * @var string
-     */
-    protected $providerName;
 
     /**
      * Constructor
