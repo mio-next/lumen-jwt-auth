@@ -20,4 +20,12 @@ interface Subject
      * @return array
      */
     public function getJWTClaims();
+
+
+    /**
+     * Get the claim validation
+     *
+     * @return array
+     */
+    public function getJWTClaimValidation();
 }

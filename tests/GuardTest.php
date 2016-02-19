@@ -110,30 +110,30 @@ class GuardTest extends BaseTestCase
         $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
         $token = $this->getValidToken();
         $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
-        $bearerToken = $guard->getBearerToken(false);
-        $this->assertEquals((string) $token, $bearerToken);
-    }
-
-
-    public function testBearerTokenForeignAllow()
-    {
-        $provider = Mockery::mock(UserProvider::class);
-        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
-        $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
-        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
-        $bearerToken = $guard->getBearerToken(true);
-        $this->assertEquals((string) $token, $bearerToken);
-    }
-
-    public function testBearerTokenForeignFail()
-    {
-        $provider = Mockery::mock(UserProvider::class);
-        $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
-        $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
-        $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
         $bearerToken = $guard->getBearerToken();
-        $this->assertFalse($bearerToken);
+        $this->assertEquals((string) $token, $bearerToken);
     }
+
+
+    // public function testBearerTokenForeignAllow()
+    // {
+    //     $provider = Mockery::mock(UserProvider::class);
+    //     $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
+    //     $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
+    //     $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
+    //     $bearerToken = $guard->getBearerToken(true);
+    //     $this->assertEquals((string) $token, $bearerToken);
+    // }
+
+    // public function testBearerTokenForeignFail()
+    // {
+    //     $provider = Mockery::mock(UserProvider::class);
+    //     $provider->shouldReceive('retrieveById')->andReturn(new Stubs\UserStub());
+    //     $token = $this->getValidToken([], [Guard::JWT_GUARD_CLAIM => 'jwt-foreign']);
+    //     $guard = new Guard('jwt', $provider, $this->getValidTokenRequest($token));
+    //     $bearerToken = $guard->getBearerToken();
+    //     $this->assertFalse($bearerToken);
+    // }
 
     public function testBadBearerToken()
     {

@@ -79,4 +79,21 @@ class Token
     {
         return $this->tokenString;
     }
+
+
+    /**
+     * Validate the claims of the token
+     * 
+     * @param  array $validateClaims
+     * @return boolean
+     */
+    public function ensureClaimValues(array $validateClaims)
+    {
+        foreach ($validateClaims as $claim => $value) {
+            if (!isset($this->claims[$claim]) || $this->claims[$claim] !== $value) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

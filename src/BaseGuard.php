@@ -21,7 +21,7 @@ abstract class BaseGuard
 {
     use GuardHelpers;
 
-    const JWT_GUARD_CLAIM = 'gua';
+    const JWT_GUARD_CLAIM = 'grd';
 
     /**
      * @var string
@@ -117,9 +117,9 @@ abstract class BaseGuard
     /**
      * @inheritdoc
      */
-    public function universalUserLogin(AuthFactory $auth)
+    public function universalUserLogin(AuthFactory $auth, $claimValidation = [])
     {
-        $token = $this->getBearerToken(true);
+        $token = $this->getBearerToken();
         $guard = false;
         if ($token !== false && $token->hasClaim(static::JWT_GUARD_CLAIM)) {
             $guard = $token->getClaim(static::JWT_GUARD_CLAIM);
@@ -140,30 +140,32 @@ abstract class BaseGuard
             return $this->user;
         }
         $user = null;
+        $claimValidation = [static::JWT_GUARD_CLAIM => $this->id];
         $token = $this->getBearerToken();
         if ($token !== false) {
             $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
+            $processor = $this->getProcessor();
+            if (!($user instanceof SubjectContract)
+                || !$token->ensureClaimValues(array_merge($user->getJWTClaimValidation(), $claimValidation))) {
+                $user = null;
+            }
         }
         return $this->user = $user;
     }
 
     /**
      * Get's the bearer token from the request header
-     *
+     * 
      * @return Token|boolean
      */
-    public function getBearerToken($allowForeign = false)
+    public function getBearerToken()
     {
         $token = $this->request->bearerToken();
         if (empty($token)) {
             return false;
         }
-        $claimValidation = [];
-        if (!$allowForeign) {
-            $claimValidation[static::JWT_GUARD_CLAIM] = $this->id;
-        }
         $processor = $this->getProcessor();
-        return $processor($token, $claimValidation);
+        return $processor($token);
     }
 
     /**

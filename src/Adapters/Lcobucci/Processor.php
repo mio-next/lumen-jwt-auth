@@ -16,10 +16,11 @@ class Processor
     extends HelperBase
     implements ProcessorContract
 {
+
     /**
      * @inheritdoc
      */
-    final public function __invoke($tokenString, $validateClaims = [])
+    final public function __invoke($tokenString)
     {
         $token = (new Parser())->parse((string) $tokenString);
         $signer = new Sha256();
@@ -33,9 +34,6 @@ class Processor
         };
         foreach ($claims as $key => $value) {
             $claims[$key] = $value->getValue();
-        }
-        if (!$this->validateClaims($claims, $validateClaims)) {
-            return false;
         }
         return new Token((string) $token, $claims);
     }
@@ -57,23 +55,6 @@ class Processor
         }
         if (!$token->validate($data)) {
             return false;
-        }
-        return true;
-    }
-
-    /**
-     * Validate the claims of the token
-     * 
-     * @param  array $claims
-     * @param  array $validateClaims
-     * @return boolean
-     */
-    private function validateClaims($claims, $validateClaims)
-    {
-        foreach ($validateClaims as $claim => $value) {
-            if (!isset($claims[$claim]) || $claims[$claim] !== $value) {
-                return false;
-            }
         }
         return true;
     }

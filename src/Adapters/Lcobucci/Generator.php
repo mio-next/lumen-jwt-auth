@@ -49,6 +49,8 @@ class Generator
     protected function getDefaultClaims()
     {
         $default = [];
+        $default['nbf'] = time() + $this->config['nbfOffset'];
+        $default['exp'] = time() + $this->config['expOffset'];
         if (!empty($this->config['issuer'])) {
             $default['iss'] = $this->config['issuer'];
         }
@@ -66,9 +68,7 @@ class Generator
     private function getForcedClaims()
     {
         return [
-            'iat' => time(),
-            'nbf' => time() + $this->config['nbfOffset'],
-            'exp' => time() + $this->config['expOffset']
+            'iat' => time()
         ];
     }
 

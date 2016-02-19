@@ -26,27 +26,6 @@ class ProcessorTest extends BaseTestCase
     }
 
 
-    public function testValidationOkay()
-    {
-        $claims = ['test-claim' => 'okay'];
-        $testToken = $this->getValidToken([], $claims);
-        $tokenStr = (string) $testToken;
-        $parser = new Processor($this->getJwtConfig());
-        $token = $parser($tokenStr, $claims);
-        $this->assertEquals($tokenStr, (string)$token);
-    }
-
-
-    public function testValidationFail()
-    {
-        $claims = ['test-claim' => 'okay'];
-        $testToken = $this->getValidToken();
-        $tokenStr = (string) $testToken;
-        $parser = new Processor($this->getJwtConfig());
-        $token = $parser($tokenStr, $claims);
-        $this->assertNotEquals($tokenStr, (string)$token);
-    }
-
     public function testIssuer()
     {
         $issuer = 'AAA.com';

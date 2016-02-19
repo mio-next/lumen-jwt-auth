@@ -30,4 +30,9 @@ class UserStub implements
     {
         return 'user-test-1';
     }
+
+    public function getJWTClaimValidation()
+    {
+        return [];
+    }
 }

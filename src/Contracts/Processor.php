@@ -15,5 +15,5 @@ interface Processor
      * @param  array   $validateClaims
      * @return Token|boolean
      */
-    public function __invoke($tokenString, $validateClaims = []);
+    public function __invoke($tokenString);
 }
