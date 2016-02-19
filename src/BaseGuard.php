@@ -7,9 +7,9 @@ namespace Canis\Lumen\Jwt;
 
 use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Guard as GaurdContract;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 use Canis\Lumen\Jwt\Exceptions\InvalidAdapterException;
 use Canis\Lumen\Jwt\Contracts\AdapterFactory as AdapterFactoryContract;
@@ -17,7 +17,7 @@ use Canis\Lumen\Jwt\Contracts\Processor as ProcessorContract;
 use Canis\Lumen\Jwt\Contracts\Subject as SubjectContract;
 
 abstract class BaseGuard
-    implements GaurdContract, GuardInterface
+    implements GaurdContract
 {
     use GuardHelpers;
 
@@ -114,53 +114,6 @@ abstract class BaseGuard
         return $this->provider;
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    public function refresh(AuthFactory $auth)
-    {
-        $token = $this->getBearerToken(true);
-        if ($token !== false && $token->hasClaim(static::JWT_GUARD_CLAIM)) {
-            $guard = $token->getClaim(static::JWT_GUARD_CLAIM);
-            return $auth->guard($guard)->refreshToken($token);
-        }
-        return false;
-    }
-
-    /**
-     * Refresh the token 
-     * @param  Token  $token
-     * @return Token|boolean  New token or false if old token can't be verified
-     */
-    public function refreshToken(Token $token)
-    {
-        $user = $this->getProvider()->retrieveById($token->getClaim('sub'));
-        $claimValidation = [static::JWT_GUARD_CLAIM => $this->id];
-        if (!($user instanceof SubjectContract)
-            || !$token->ensureClaimValues(array_merge($user->getJWTClaimValidation(), $claimValidation))) {
-            return false;
-        }
-        return $this->generateToken($user);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function universalUserLogin(AuthFactory $auth)
-    {
-        $token = $this->getBearerToken();
-        $guard = false;
-        if ($token !== false && $token->hasClaim(static::JWT_GUARD_CLAIM)) {
-            $guard = $token->getClaim(static::JWT_GUARD_CLAIM);
-            $user = $auth->guard($guard)->user();
-            if ($user === null) {
-                $guard = false;
-            }
-        }
-        return $guard;
-    }
-
     /**
      * @inheritdoc
      */
@@ -201,7 +154,7 @@ abstract class BaseGuard
     public function validate(array $credentials = [])
     {
         $user = $this->getProvider()->retrieveByCredentials($credentials);
-        if ($this->hasValidCredentials($user, $credentials)) {
+        if ($user instanceof Authenticatable && $this->hasValidCredentials($user, $credentials)) {
             return true;
         }
         return false;
@@ -248,7 +201,7 @@ abstract class BaseGuard
     public function attempt(array $credentials = [])
     {
         $user = $this->getProvider()->retrieveByCredentials($credentials);
-        if ($this->hasValidCredentials($user, $credentials)) { 
+        if ($user instanceof Authenticatable && $this->hasValidCredentials($user, $credentials)) { 
             if (!($user instanceof SubjectContract)) {
                 throw new InvalidTokenException("Unable to generate token");
             }
@@ -263,7 +216,7 @@ abstract class BaseGuard
      * @param  SubjectContract $user
      * @return Token
      */
-    private function generateToken(SubjectContract $user)
+    protected function generateToken(SubjectContract $user)
     {
         $tokenGenerator = $this->getGenerator();
         $claims = $user->getJWTClaims();
