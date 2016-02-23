@@ -11,11 +11,13 @@ use Canis\Lumen\Jwt\Adapters\Lcobucci\Generator;
 use Canis\Lumen\Jwt\Adapters\Lcobucci\Factory;
 use Canis\Lumen\Jwt\ServiceProvider as JwtServiceProvider;
 use Canis\Lumen\Jwt\Guard as JwtGuard;
+use Illuminate\Support\Facades\Facade;
 
 abstract class BaseTestCase extends \Laravel\Lumen\Testing\TestCase
 {
     public function createApplication()
     {
+        Facade::clearResolvedInstances();
         $app = new \Laravel\Lumen\Application(__DIR__);
         $app->withFacades();
         $app->register(JwtServiceProvider::class);

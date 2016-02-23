@@ -14,12 +14,8 @@ use Illuminate\Http\Request;
 use Canis\Lumen\Jwt\Token;
 use Canis\Lumen\Jwt\Exceptions\InvalidTokenException;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class GuardTest extends BaseTestCase
 {
-
     public function setUp()
     {
         parent::setUp();
@@ -31,6 +27,28 @@ class GuardTest extends BaseTestCase
         $guard = $this->getGuard();
         $gen = $this->invoke($guard, 'getGenerator');
         $this->assertTrue($gen instanceof \Canis\Lumen\Jwt\Adapters\Lcobucci\Generator);
+    }
+
+    public function testLogin()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        $guard = new Guard('jwt', $provider, $this->getRequest());
+        $user = new Stubs\UserStub();
+        $guard->login($user);
+        $this->assertEquals($guard->id(), 'user-test-1');
+    }
+
+    public function testLogout()
+    {
+        $provider = Mockery::mock(UserProvider::class);
+        //$provider->shouldReceive('retrieveById')->andReturn(null);
+        $guard = new Guard('jwt', $provider, $this->getRequest());
+        $user = new Stubs\UserStub();
+        $guard->login($user);
+        $this->assertFalse($guard->guest());
+        $this->assertEquals($guard->id(), 'user-test-1');
+        $guard->logout();
+        $this->assertTrue($guard->guest());
     }
 
     public function testUser()

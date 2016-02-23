@@ -39,6 +39,11 @@ abstract class BaseGuard
     protected $config;
 
     /**
+     * @var array
+     */
+    private $factoryCache = [];
+
+    /**
      * Constructor
      *
      * @param UserProvider $provider
@@ -81,16 +86,15 @@ abstract class BaseGuard
      */
     protected function getAdapterFactory()
     {
-        static $factory = [];
-        if (!isset($factory[$this->id])) {
+        if (!isset($this->factoryCache[$this->id])) {
             $config = config('jwt');
             if (isset($this->config['adapter'])) {
                 $config = array_merge($config, $this->config['adapter']);
             }
             $factoryClass = $this->getAdapterFactoryClass();
-            $factory[$this->id] = new $factoryClass($config);
+            $this->factoryCache[$this->id] = new $factoryClass($config);
         }
-        return $factory[$this->id];
+        return $this->factoryCache[$this->id];
     }
 
     /**
@@ -205,18 +209,43 @@ abstract class BaseGuard
      * Attempt to authenticate a user using the given credentials.
      *
      * @param  array  $credentials
+     * @param  boolean $login
      * @return bool|Token
      */
-    public function attempt(array $credentials = [])
+    public function attempt(array $credentials = [], $login = true)
     {
         $user = $this->getProvider()->retrieveByCredentials($credentials);
-        if ($user instanceof Authenticatable && $this->hasValidCredentials($user, $credentials)) { 
+        if ($user instanceof Authenticatable && $this->hasValidCredentials($user, $credentials)) {
+            if ($login === true) {
+                $this->login($user);
+            }
             if (!($user instanceof SubjectContract)) {
                 throw new InvalidTokenException("Unable to generate token");
             }
             return $this->generateToken($user);
         }
         return false;
+    }
+
+    /**
+     * Log a user into the application.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     */
+    public function login(Authenticatable $user)
+    {
+        $this->setUser($user);
+        return true;
+    }
+
+    /**
+     * Clear user
+     * @return boolean
+     */
+    public function logout()
+    {
+        $this->user = null;
+        return true;
     }
 
     /**

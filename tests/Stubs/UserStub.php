@@ -18,6 +18,12 @@ class UserStub implements
     JwtSubjectInterface
 {
     use Authenticatable, Authorizable;
+    public $id = 'user-test-1';
+
+    public function getKey()
+    {
+        return $this->id;
+    }
     
     public function getJWTClaims()
     {
